@@ -17,7 +17,7 @@ def create_tables_and_constraints():
             name varchar(25) not null
         )
     """)
-
+    #haide
     cursor.execute("""
         insert into date_individ values('Cosmin')
     """)
