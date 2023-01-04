@@ -8,4 +8,6 @@ from flask import Flask,render_template,redirect
 #def home():
 #    return render_template('home.html',text='SUNT BOSS')
 
+delete_tables()
+
 create_tables_and_constraints()
