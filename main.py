@@ -11,3 +11,6 @@ from flask import Flask,render_template,redirect
 delete_tables()
 
 create_tables_and_constraints()
+
+
+insert_values()

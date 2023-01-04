@@ -114,7 +114,7 @@ def create_tables_and_constraints():
             FOREIGN KEY (id_masina) REFERENCES masina (id_masina)
         )
     """)
-    
+
     cursor.execute("""
         CREATE TRIGGER update_nr_inchirieri
         AFTER INSERT ON cerere
@@ -136,7 +136,7 @@ def create_tables_and_constraints():
             IF vechiul_nr_de_inchirieri > 0 THEN
                 SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
                 IF NEW.data_inceput < ultima_data_retur THEN
-                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Data invalida';
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Data inceput inchiriere invalida';
                 END IF;
             END IF;
         END
@@ -152,7 +152,7 @@ def create_tables_and_constraints():
         IF vechiul_nr_de_inchirieri > 0 THEN
             SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
             IF NEW.data_inceput < ultima_data_retur THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Data invalida';
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Data inceput inchiriere invalida ';
             END IF;
         END IF;
         END
@@ -193,12 +193,12 @@ def create_tables_and_constraints():
         BEFORE INSERT ON date_individ 
         FOR EACH ROW 
         BEGIN
-            IF( CURRENT_TIMESTAMP()-NEW.data_nasterii <=18*365)
+            IF( DATEDIFF(CURRENT_TIMESTAMP(),NEW.data_nasterii)  <=18*365)
             THEN
                 SIGNAL SQLSTATE '45000' 
                 SET MESSAGE_TEXT = 'Data invalida varsta minima 18 ani.';
             END IF;
-            IF( CURRENT_TIMESTAMP()-NEW.data_nasterii >=75*365)
+            IF( DATEDIFF(CURRENT_TIMESTAMP(),NEW.data_nasterii)  >=75*365)
             THEN
                 SIGNAL SQLSTATE '45000' 
                 SET MESSAGE_TEXT = 'Data invalida varsta maxima 75 ani.';
@@ -211,12 +211,12 @@ def create_tables_and_constraints():
         BEFORE INSERT ON date_individ 
         FOR EACH ROW 
         BEGIN
-            IF( CURRENT_TIMESTAMP()-NEW.data_nasterii <=18*365)
+            IF( DATEDIFF(CURRENT_TIMESTAMP(),NEW.data_nasterii)  <=18*365)
             THEN
                 SIGNAL SQLSTATE '45000' 
                 SET MESSAGE_TEXT = 'Data invalida varsta minima 18 ani.';
             END IF;
-            IF( CURRENT_TIMESTAMP()-NEW.data_nasterii >=75*365)
+            IF( DATEDIFF(CURRENT_TIMESTAMP(),NEW.data_nasterii) >=75*365)
             THEN
                 SIGNAL SQLSTATE '45000' 
                 SET MESSAGE_TEXT = 'Data invalida varsta maxima 75 ani.';
@@ -231,9 +231,9 @@ def create_tables_and_constraints():
             IF( NEW.an_fabricatie >= CURRENT_TIMESTAMP() )
                 THEN
                 SIGNAL SQLSTATE '45000' 
-                SET MESSAGE_TEXT = 'Data invalida ';
+                SET MESSAGE_TEXT = 'Data invalida pentru anul fabricatiei';
             END IF;
-        END;
+        END
     """)
     cursor.execute("""
         CREATE TRIGGER trg_an_fabricatie_before_update
@@ -243,9 +243,9 @@ def create_tables_and_constraints():
             IF( NEW.an_fabricatie >= CURRENT_TIMESTAMP() )
                 THEN
                 SIGNAL SQLSTATE '45000' 
-                SET MESSAGE_TEXT = 'Data invalida ';
+                SET MESSAGE_TEXT = 'Data invalida pentru anul fabricatiei';
             END IF;
-        END;
+        END
     """)
 
     cursor.execute("""
@@ -321,7 +321,90 @@ def create_tables_and_constraints():
         INSERT INTO lista_neagra (motiv_suspendare, id_client)
         VALUES ('rating <= 4', NEW.id_client);
     END IF;
-    END;
+    END
     """)
 
     cursor.execute("""commit""")  
+
+
+def create_cerere(data_inceput, data_retur,id_client, id_masina):
+    return f"""
+        INSERT INTO cerere (id_cerere, data_inceput, data_retur, id_client, id_masina, pret_total)
+        VALUES
+        (NULL, '{data_inceput}', '{data_retur}', {id_client}, {id_masina},
+        (SELECT DATEDIFF('{data_retur}', '{data_inceput}') FROM DUAL)*(SELECT pret_inchiriere FROM masina WHERE id_masina={id_masina}))
+    """
+""""query = create_cerere('2020-03-20', '2020-03-25', 1)
+cursor.execute(query)"""
+
+def insert_values():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO masina (id_masina, tip_masina, an_fabricatie, culoare, pret_inchiriere) 
+        VALUES
+            (NULL, 'BMW', '2000-03-10', 'Gri', 100),
+            (NULL, 'AUDI', '2008-05-05', 'Rosie', 95),
+            (NULL, 'SCODA', '2010-02-01', 'Galbena', 110),
+            (NULL, 'MERCEDES', '2005-04-10', 'Albastra', 75),
+            (NULL, 'TESLA', '2015-12-25', 'Neagra', 150),
+            (NULL, 'DACIA', '2007-10-27', 'Verde', 65),
+            (NULL, 'PEUGEOT', '2013-03-10', 'Roz', 80)
+    """)
+
+    cursor.execute("""
+        INSERT INTO date_individ (nr_telefon, nume, prenume, data_nasterii)
+        VALUES
+            ('0722222222', 'Ion', 'Ion', '1980-03-10'),
+            ('0722222232', 'Ionut', 'Ion', '1970-03-27'),
+            ('0722222252', 'Alex', 'Ion', '1985-10-10'),
+            ('0722222262', 'Cosmin', 'Alex', '1981-11-11'),
+            ('0722222272', 'Danut', 'Ion', '1994-05-15'),
+            ('0722222282', 'Alt', 'Ion', '1999-03-16'),
+            ('0722333282', 'Ion', 'Rating', '1999-03-16'),
+            ('0742333282', 'Lista', 'Neagra', '1999-03-16')
+    """)
+
+    cursor.execute("""
+        INSERT INTO cont_client (id_client, rating, nr_inchirieri, nr_telefon, email)
+        VALUES
+            (NULL, DEFAULT, 0, '0722222222', 'ion.ion@gmail.com'),
+            (NULL, DEFAULT, 0, '0722222232', 'ionut.ion@gmail.com'),
+            (NULL, DEFAULT, 0, '0722222252', 'alex.ion@gmail.com'),
+            (NULL, DEFAULT, 0, '0722222262', 'cosmin.alex@gmail.com'),
+            (NULL, DEFAULT, 0, '0722222272', 'danut.ion@gmail.com'),
+            (NULL, DEFAULT, 0, '0722222282', 'alt.ion@gmail.com')
+    """)
+
+    cursor.execute("""
+        INSERT INTO lista_neagra(motiv_suspendare,id_client) VALUES
+        ('A FACUT ACCIDENT',1),
+        ('COMPORTAMENT NEADEGVAT',4)
+    """)
+
+    cursor.execute("""
+        INSERT INTO cerere (id_cerere, data_inceput, data_retur, id_client, id_masina, pret_total)
+        VALUES
+        (NULL, '2020-03-20', '2020-03-25', 2, 1,
+        (SELECT DATEDIFF('2020-03-25', '2020-03-20') FROM DUAL)*(SELECT pret_inchiriere FROM masina WHERE id_masina=1)),
+        (NULL, '2020-03-26', '2020-03-28', 3, 1,
+        (SELECT DATEDIFF('2020-03-28', '2020-03-26') FROM DUAL)*(SELECT pret_inchiriere FROM masina WHERE id_masina=1)),
+        (NULL, '2020-03-27', '2020-03-30', 6, 4,
+        (SELECT DATEDIFF('2020-03-30', '2020-03-27') FROM DUAL)*(SELECT pret_inchiriere FROM masina WHERE id_masina=4)),
+        (NULL, '2020-03-27', '2020-03-30', 5, 3,
+        (SELECT DATEDIFF('2020-03-30', '2020-03-27') FROM DUAL)*(SELECT pret_inchiriere FROM masina WHERE id_masina=3)),
+        (NULL, '2020-04-01', '2020-04-05', 6, 4,
+        (SELECT DATEDIFF('2020-04-05', '2020-04-01') FROM DUAL)*(SELECT pret_inchiriere FROM masina WHERE id_masina=4))
+    """)
+
+    cursor.execute("""
+        INSERT INTO status_masina (id_masina, status, stare_la_predare, stare_la_retur, data_retur_sm)
+        VALUES
+        (1, 'INCHIRIATA', DEFAULT, NULL, '2020-03-25'),
+        (3, 'INCHIRIATA', DEFAULT, NULL, '2020-03-30'),
+        (4, 'INCHIRIATA', DEFAULT, NULL, '2020-04-05')
+    """)
+
+    cursor.execute("""commit""")
+
