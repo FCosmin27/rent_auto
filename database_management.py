@@ -298,6 +298,7 @@ def create_tables_and_constraints():
     END IF;
     END
     """)
+    
 
     cursor.execute("""
     CREATE TRIGGER inserare_lista_neagra_after_update
@@ -327,14 +328,15 @@ def create_tables_and_constraints():
     cursor.execute("""commit""")  
 
 
-def create_cerere(data_inceput, data_retur,id_client, id_masina):
+def add_cerere(data_inceput, data_retur,id_client, id_masina):
     return f"""
         INSERT INTO cerere (id_cerere, data_inceput, data_retur, id_client, id_masina, pret_total)
         VALUES
         (NULL, '{data_inceput}', '{data_retur}', {id_client}, {id_masina},
         (SELECT DATEDIFF('{data_retur}', '{data_inceput}') FROM DUAL)*(SELECT pret_inchiriere FROM masina WHERE id_masina={id_masina}))
     """
-""""query = create_cerere('2020-03-20', '2020-03-25', 1)
+
+"""query = create_cerere('2020-03-20', '2020-03-25', 1)
 cursor.execute(query)"""
 
 def insert_values():
