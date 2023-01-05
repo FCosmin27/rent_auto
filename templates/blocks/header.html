@@ -1,0 +1,54 @@
+{% block header %}
+   <nav class="navbar navbar-expand-lg navbar-light bg-light" style="width: 100%;">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li>
+                        <form class="nav-brand" action="/home" method="get">
+                            <button type="submit" class="btn btn-outline-secondary">Home</button>
+                        </form>
+                    </li>
+                    <li>
+                        <form class="nav-brand" action="/customers" method="get">
+                            <button type="submit" class="btn btn-outline-secondary">Customers</button>
+                        </form>
+                    </li>
+                    <li>
+                        <form class="nav-brand" action="/cars" method="get">
+                            <button type="submit" class="btn btn-outline-secondary">Cars</button>
+                        </form>
+                    </li>
+                    <li>
+                        <form class="nav-brand" action="/orders" method="get">
+                            <button type="submit" class="btn btn-outline-secondary">Orders</button>
+                        </form>
+                    </li>
+                    <li class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                        id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            Tables
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li>
+                                <form class="dropdown-item" action="/create-tables" method="post">
+                                    <button type="submit" class="btn btn-light">Create tables</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form class="dropdown-item" action="/insert-data" method="post">
+                                    <button type="submit" class="btn btn-light">Insert data</button>
+                                </form>
+                            </li>
+                            <li>
+                                <form class="dropdown-item" action="/delete-tables" method="post">
+                                    <button type="submit" class="btn btn-light">Detele tables</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+   </nav>
+
+{% endblock %}

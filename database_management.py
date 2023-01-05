@@ -342,7 +342,7 @@ cursor.execute(query)"""
 def insert_values():
     conn=connect_to_database()
     cursor=conn.cursor()
-
+    
     cursor.execute("""
         INSERT INTO masina (id_masina, tip_masina, an_fabricatie, culoare, pret_inchiriere) 
         VALUES

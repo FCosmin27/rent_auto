@@ -3,9 +3,11 @@
         <title>
             Home
         </title>
+        {% include 'blocks/css.html' %}
     </head>
     <body>
-        <h1>
+        {% include 'blocks/header.html' %}
+        <h1 class="text-center">
             Home
         </h1>
         {% if text != none %}
@@ -13,5 +15,6 @@
             {{text}}
         </p>
         {% endif %}
+        {% include 'blocks/js.html' %}
     </body>
 </html>

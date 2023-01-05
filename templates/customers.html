@@ -1,0 +1,109 @@
+<html>
+    <head>
+        <title>
+            Customers Info
+        </title>
+        {% include 'blocks/css.html' %}
+    </head>
+
+    <body>
+        {% include 'blocks/header.html' %}
+
+        <div class="text-center">
+            <h1>
+                Customers Info
+            </h1>
+        </div>
+        <br>
+        <br>
+
+        <div class="row justify-content-center align-items-center" style="width:100%">
+            <div class="col-1" style="width: 60%;">
+                <h2>Customer accounts</h2>
+                <table class="table table-striped table-hover" style="width: 100%">
+                    <thread>
+                        <tr style="font-size:20px;font-weight: bold;">
+                            <th>Customer ID</th>
+                            <th>Phone Number</th>
+                            <th>Email</th>
+                            <th>Rating</th>
+                            <th>No. of Rentals</th>
+                        </tr>
+                    </thread>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{customer[0]}}</td>
+                            <td>{{customer[3]}}</td>
+                            <td>{{customer[4]}}</td>
+                            <td>{{customer[1]}}</td>
+                            <td>{{customer[2]}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <br><br>
+                <h2>Personal data</h2>
+                <table class="table table-striped table-hover" style="width: 100%">
+                    <thread>
+                        <tr style="font-size:20px;font-weight: bold;">
+                            <th>Phone Number</th>
+                            <th>Last Name</th>
+                            <th>First Name</th>
+                            <th>Birth Date</th>
+                        </tr>
+                    </thread>
+                    <tbody>
+                        {% for c_info in customer_info%}
+                        <tr>
+                            <td>{{c_info[0]}}</td>
+                            <td>{{c_info[1]}}</td>
+                            <td>{{c_info[2]}}</td>
+                            <td>{{c_info[3]}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-1" style="width: 40%;">
+                <form action="/add-account" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="phone_acc" style="width: 25%;">Phone Number</span>
+                        <input type="text" class="form-control" name="phone_acc" id="phone_acc" placeholder="ex. 0733355555" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="email" style="width: 25%;">Email</span>
+                        <input type="text" class="form-control" name="email" id="email" placeholder="ex. costumer.account@gmail.com" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 25%;">Add new account</button>
+                </form>
+                <br><br>
+                <form action="/add-personal-info" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="last_name" style="width: 25%;">Last Name</span>
+                        <input type="text" class="form-control" name="last_name" id="last_name" placeholder="ex. Popescu" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="first_name" style="width: 25%;">First Name</span>
+                        <input type="text" class="form-control" name="first_name" id="first_name" placeholder="ex. Ion" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="birth_date" style="width: 25%;">Birth Date</span>
+                        <input type="text" class="form-control" name="birth_date" id="birth_date" placeholder="ex. 2000-10-27" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="phone_pers_info" style="width: 25%;">Phone Number</span>
+                        <input type="text" class="form-control" name="phone_pers_info" id="phone_acc" placeholder="ex. 0733355555" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 30%;">Add Customer Personal Info</button>
+                </form>
+            </div>
+        </div>
+        {% include 'blocks/js.html' %}
+    </body>
+</html>
