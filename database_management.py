@@ -53,9 +53,9 @@ def create_tables_and_constraints():
         CREATE TABLE cont_client (
             id_client     INT NOT NULL AUTO_INCREMENT,
             rating        INT DEFAULT 10,
-            nr_inchirieri INT,
+            nr_inchirieri INT DEFAULT 0,
             nr_telefon    CHAR(10) NOT NULL,
-            email         VARCHAR(25),
+            email         VARCHAR(45),
             CHECK ( rating BETWEEN 0 AND 10 ),
             CHECK ( email REGEXP '[a-z0-9._%-]+@[a-z0-9._%-]+\.[a-z]{2,4}' ),
             UNIQUE INDEX cont_client__idx (nr_telefon),
