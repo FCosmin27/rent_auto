@@ -105,12 +105,12 @@ def create_tables_and_constraints():
         CREATE TABLE status_masina (
             id_masina        INT NOT NULL,
             status           VARCHAR(15) NOT NULL,
-            stare_la_predare VARCHAR(20) DEFAULT 'BUNA',
-            stare_la_retur   VARCHAR(20),
+            stare_la_predare VARCHAR(20) DEFAULT 'GOOD CONDITION',
+            stare_la_retur   VARCHAR(20) DEFAULT 'UNKNOWN',
             data_retur_sm       DATE NOT NULL,
             UNIQUE INDEX status_masina__idx (id_masina),
-            CHECK (status IN ('INCHIRIATA', 'RETURNATA')),
-            CHECK (stare_la_retur IN ('ACCIDENT', 'BUNA', 'ZGARIATA')),
+            CHECK (status IN ('RENTED', 'RETURNED')),
+            CHECK (stare_la_retur IN ('UNKNOWN','ACCIDENT', 'GOOD CONDITION', 'SCRATCHED')),
             FOREIGN KEY (id_masina) REFERENCES masina (id_masina)
         )
     """)
@@ -253,19 +253,19 @@ def create_tables_and_constraints():
     AFTER UPDATE ON status_masina
     FOR EACH ROW
     BEGIN
-    IF (NEW.stare_la_retur = 'ZGARIATA' and NEW.status='RETURNATA') THEN
+    IF (NEW.stare_la_retur = 'SCRATCHED' and NEW.status='RETURNED') THEN
         UPDATE cont_client
         SET rating = rating - 1
         WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
         and rating>4;
     END IF;
-    IF (NEW.stare_la_retur = 'BUNA'and NEW.status='RETURNATA') THEN
+    IF (NEW.stare_la_retur = 'GOOD CONDITION'and NEW.status='RETURNED') THEN
             UPDATE cont_client
             SET rating = rating + 1
             WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
             and rating<10;
     END IF;
-    IF (NEW.stare_la_retur = 'ACCIDENT'and NEW.status='RETURNATA') THEN
+    IF (NEW.stare_la_retur = 'ACCIDENT'and NEW.status='RETURNED') THEN
             UPDATE cont_client
             SET rating = rating - 4
             WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
@@ -278,19 +278,19 @@ def create_tables_and_constraints():
     AFTER INSERT ON status_masina
     FOR EACH ROW
     BEGIN
-    IF (NEW.stare_la_retur = 'ZGARIATA' and NEW.status='RETURNATA') THEN
+    IF (NEW.stare_la_retur = 'SCRATCHED' and NEW.status='RETURNED') THEN
         UPDATE cont_client
         SET rating = rating - 1
         WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
         and rating>4;
     END IF;
-    IF (NEW.stare_la_retur = 'BUNA'and NEW.status='RETURNATA') THEN
+    IF (NEW.stare_la_retur = 'GOOD CONDITION'and NEW.status='RETURNED') THEN
             UPDATE cont_client
             SET rating = rating + 1
             WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
             and rating<10;
     END IF;
-    IF (NEW.stare_la_retur = 'ACCIDENT'and NEW.status='RETURNATA') THEN
+    IF (NEW.stare_la_retur = 'ACCIDENT'and NEW.status='RETURNED') THEN
             UPDATE cont_client
             SET rating = rating - 4
             WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
@@ -346,13 +346,13 @@ def insert_values():
     cursor.execute("""
         INSERT INTO masina (id_masina, tip_masina, an_fabricatie, culoare, pret_inchiriere) 
         VALUES
-            (NULL, 'BMW', '2000-03-10', 'Gri', 100),
-            (NULL, 'AUDI', '2008-05-05', 'Rosie', 95),
-            (NULL, 'SCODA', '2010-02-01', 'Galbena', 110),
-            (NULL, 'MERCEDES', '2005-04-10', 'Albastra', 75),
-            (NULL, 'TESLA', '2015-12-25', 'Neagra', 150),
-            (NULL, 'DACIA', '2007-10-27', 'Verde', 65),
-            (NULL, 'PEUGEOT', '2013-03-10', 'Roz', 80)
+            (NULL, 'BMW', '2000-03-10', 'Brown', 100),
+            (NULL, 'AUDI', '2008-05-05', 'Red', 95),
+            (NULL, 'SCODA', '2010-02-01', 'Yellow', 110),
+            (NULL, 'MERCEDES', '2005-04-10', 'Blue', 75),
+            (NULL, 'TESLA', '2015-12-25', 'Black', 150),
+            (NULL, 'DACIA', '2007-10-27', 'Green', 65),
+            (NULL, 'PEUGEOT', '2013-03-10', 'Pink', 80)
     """)
 
     cursor.execute("""
@@ -381,8 +381,8 @@ def insert_values():
 
     cursor.execute("""
         INSERT INTO lista_neagra(motiv_suspendare,id_client) VALUES
-        ('A FACUT ACCIDENT',1),
-        ('COMPORTAMENT NEADEGVAT',4)
+        ('HAD AN ACCIDENT',1),
+        ('INAPPROPRIATE BEHAVIOR',4)
     """)
 
     cursor.execute("""
@@ -403,9 +403,9 @@ def insert_values():
     cursor.execute("""
         INSERT INTO status_masina (id_masina, status, stare_la_predare, stare_la_retur, data_retur_sm)
         VALUES
-        (1, 'INCHIRIATA', DEFAULT, NULL, '2020-03-25'),
-        (3, 'INCHIRIATA', DEFAULT, NULL, '2020-03-30'),
-        (4, 'INCHIRIATA', DEFAULT, NULL, '2020-04-05')
+        (1, 'RENTED', DEFAULT, DEFAULT, '2020-03-25'),
+        (3, 'RENTED', DEFAULT, DEFAULT, '2020-03-30'),
+        (4, 'RENTED', DEFAULT, DEFAULT, '2020-04-05')
     """)
 
     cursor.execute("""commit""")

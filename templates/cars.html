@@ -1,0 +1,154 @@
+<html>
+    <head>
+        <title>
+            Cars Info
+        </title>
+        {% include 'blocks/css.html' %}
+    </head>
+
+    <body>
+        {% include 'blocks/header.html' %}
+
+        <div class="text-center">
+            <h1>
+                Cars Info
+            </h1>
+        </div>
+        <br>
+        <br>
+
+        <div class="row justify-content-center align-items-center" style="width:100%">
+            <div class="col-1" style="width: 60%;">
+                <h2>Cars</h2>
+                <table class="table table-striped table-hover" style="width: 100%">
+                    <thread>
+                        <tr style="font-size:20px;font-weight: bold;">
+                            <th>Car ID</th>
+                            <th>Type</th>
+                            <th>Date of fabrication</th>
+                            <th>Color</th>
+                            <th>Rent price</th>
+                        </tr>
+                    </thread>
+                    <tbody>
+                        {% for car in cars %}
+                        <tr>
+                            <td>{{car[0]}}</td>
+                            <td>{{car[1]}}</td>
+                            <td>{{car[2]}}</td>
+                            <td>{{car[3]}}</td>
+                            <td>{{car[4]}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <br><br>
+                <h2>Car Status</h2>
+                <table class="table table-striped table-hover" style="width: 100%">
+                    <thread>
+                        <tr style="font-size:20px;font-weight: bold;">
+                            <th>Car ID</th>
+                            <th>Status</th>
+                            <th>Status at Rental</th>
+                            <th>Status at Return</th>
+                        </tr>
+                    </thread>
+                    <tbody>
+                        {% for car_status in cars_status%}
+                        <tr>
+                            <td>{{car_status[0]}}</td>
+                            <td>{{car_status[1]}}</td>
+                            <td>{{car_status[2]}}</td>
+                            <td>{{car_status[3]}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-1" style="width: 40%;">
+                <form action="/add-car" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="type" style="width: 25%;">Type</span>
+                        <input type="text" class="form-control" name="type" id="type" placeholder="ex. BMW" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="date" style="width: 25%;">Date of fabrication</span>
+                        <input type="text" class="form-control" name="date" id="date" placeholder="ex. 2010-10-20" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="color" style="width: 25%;">Color</span>
+                        <input type="text" class="form-control" name="color" id="color" placeholder="ex. Red" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="price" style="width: 25%;">Rent Price</span>
+                        <input type="text" class="form-control" name="price" id="price" placeholder="ex. 100" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 25%;">Add new car</button>
+                </form>
+
+                <br>
+
+                <form action="/remove-car" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="car_id" style="width: 25%;">Car ID</span>
+                        <input type="text" class="form-control" name="car_id" id="car_id" placeholder="ex. 1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 25%;">Remove car</button>
+                </form>
+
+                <br>
+
+                <form action="/update-car-verify" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="car_id" style="width: 25%;">Car ID</span>
+                        <input type="text" class="form-control" name="car_id" id="car_id" placeholder="ex. 1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 25%;">Update car info</button>
+                </form>
+
+                <br>
+
+                <form action="/add-car-status" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="car_id" style="width: 25%;">Car ID</span>
+                        <input type="text" class="form-control" name="car_id" id="car_id" placeholder="ex. 1" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="status" style="width: 25%;">Status</span>
+                        <input type="text" class="form-control" name="status" id="status" placeholder="ex. RETURNED" required>
+                    </div>
+
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="return_date" style="width: 25%;">Return Date</span>
+                        <input type="text" class="form-control" name="return_date" id="return_date" placeholder="ex. 2000-10-27" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 30%;">Add car status</button>
+                </form>
+
+                <br>
+                <form action="/remove-car-status"method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="car_id" style="width: 25%;">Car ID</span>
+                        <input type="text" class="form-control" name="car_id" id="car_id" placeholder="ex. 1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 30%;">Remove car status</button>
+                </form>
+                <br>
+
+                <form action="/update-car-status-verify" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="car_id" style="width: 25%;">Car ID</span>
+                        <input type="text" class="form-control" name="car_id" id="car_id" placeholder="ex. 1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 25%;">Update car status</button>
+                </form>
+            </div>
+        </div>
+        {% include 'blocks/js.html' %}
+    </body>
+</html>

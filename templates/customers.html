@@ -93,8 +93,8 @@
 
                 <form action="/update-account-verify" method="post">
                     <div class="input-group mb-3 data_input_size">
-                        <span class = "input-group-text" for="customer_id_upt" style="width: 25%;">Customer ID</span>
-                        <input type="text" class="form-control" name="customer_id_upt" id="customer_id_upt" placeholder="ex. 1" required>
+                        <span class = "input-group-text" for="customer_id" style="width: 25%;">Customer ID</span>
+                        <input type="text" class="form-control" name="customer_id" id="customer_id" placeholder="ex. 1" required>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 25%;">Update customer account</button>
                 </form>
@@ -131,6 +131,15 @@
                         <input type="text" class="form-control" name="phone_pers_info" id="phone_acc" placeholder="ex. 0733355555" required>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 30%;">Remove Customer Personal Info</button>
+                </form>
+                <br>
+
+                <form action="/update-personal-data-verify" method="post">
+                    <div class="input-group mb-3 data_input_size">
+                        <span class = "input-group-text" for="phone" style="width: 25%;">Phone Number</span>
+                        <input type="text" class="form-control" name="phone" id="phone" placeholder="ex. 0333333333" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 30%;">Update customer personal info</button>
                 </form>
             </div>
         </div>
