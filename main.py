@@ -116,27 +116,23 @@ def handle_remove_personal_info():
 def handle_update_account_verify():
     conn=connect_to_database()
     cursor=conn.cursor()
-    customer_id=request.form['customer_id_upt']
+    customer_id_upt=request.form['customer_id_upt']
 
-    cursor.execute(f"SELECT true FROM cont_client WHERE id_client={customer_id}")
+    cursor.execute(f"SELECT * FROM cont_client WHERE id_client={customer_id_upt}")
     if cursor.fetchone is None:
-        return render_template('home.html',text=f'Invalid Update, Customer ID does not exist')
-    
-    cursor.execute(f"SELECT * FROM cont_client WHERE id_client={customer_id}")
-    customer=cursor.fetchone()
-
-    return render_template('update_account.html',customer=customer)
+        return render_template('home.html',text=f'Invalid Update, Customer ID : {customer_id_upt}does not exist')
+    return render_template('update_account.html',customer=customer_id_upt)
 
 @app.route('/update-account-execute',methods=['POST'])
 def handle_update_account_execute():
     conn=connect_to_database()
     cursor=conn.cursor()
-    customer_id=request.form['customer_id_ex']
+    customer_id_ex=request.form['customer_id_ex']
     phone_acc=request.form['phone_acc']
     email=request.form['email']
 
     try:
-        cursor.execute(f"UPDATE cont_client SET nr_telefon={phone_acc},email='{email}' WHERE id_client={customer_id}")
+        cursor.execute(f"UPDATE cont_client SET nr_telefon={phone_acc},email='{email}' WHERE id_client={customer_id_ex}")
     except Exception as e:
         return render_template('home.html',text=f'Invalid Update, Exception: {e}')
 
