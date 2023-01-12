@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <title>Update Black List</title>
+        {% include 'blocks/css.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header.html' %}
+        <div class="container-fluid text-center bg" style="height: 100%;width: 100%;">
+        <h1>Update Black List</h1>
+        <form class="mx-auto" action="/update-black-list-execute" method="post" style="width: 50%;">
+            <div class="form-group">
+                <label for="id_client">Client ID</label>
+                <input type="text" class="form-control" id="id_client" name="id_client" value="{{client[1]}}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason of Suspension</label>
+                <input type="text" class="form-control" id="reason" name="reason" value="{{client[0]}}">
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+
+        </form>
+        </div>
+        {% include 'blocks/js.html' %}
+    </body>
+</html>

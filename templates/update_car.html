@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <title>Update Car Info</title>
+        {% include 'blocks/css.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header.html' %}
+        <div class="container-fluid text-center bg" style="height: 100%;width: 100%;">
+        <h1>Update Car Info</h1>
+        <form class="mx-auto" action="/update-car-execute" method="post" style="width: 50%;">
+            <div class="form-group">
+                <label for="car_id">Car ID</label>
+                <input type="text" class="form-control" id="car_id" name="car_id" value="{{car[0]}}" readonly>
+            </div>
+          
+            <div class="form-group">
+                <label for="type">Type</label>
+                <input type="text" class="form-control" id="type" name="type" value="{{car[1]}}">
+            </div>
+
+            <div class="form-group">
+                <label for="date_of_fb">Date of fabrication</label>
+                <input type="text" class="form-control" id="date_of_fb" name="date_of_fb" value="{{car[2]}}">
+            </div>
+
+            <div class="form-group">
+                <label for="color">Color</label>
+                <input type="text" class="form-control" id="color" name="color" value="{{car[3]}}">
+            </div>
+
+            <div class="form-group">
+                <label for="price">Rent Price</label>
+                <input type="text" class="form-control" id="price" name="price" value="{{car[4]}}">
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+
+        </form>
+        </div>
+        {% include 'blocks/js.html' %}
+    </body>
+</html>

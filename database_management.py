@@ -93,7 +93,7 @@ def create_tables_and_constraints():
 
     cursor.execute("""
         CREATE TABLE lista_neagra (
-            motiv_suspendare VARCHAR(35) NOT NULL,
+            motiv_suspendare VARCHAR(100) NOT NULL,
             id_client        INT,
             PRIMARY KEY (motiv_suspendare),
             UNIQUE INDEX lista_neagra__idx (id_client),
@@ -135,8 +135,8 @@ def create_tables_and_constraints():
             SELECT COUNT(*) INTO vechiul_nr_de_inchirieri FROM cerere WHERE id_masina = NEW.id_masina;
             IF vechiul_nr_de_inchirieri > 0 THEN
                 SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
-                IF NEW.data_inceput < ultima_data_retur THEN
-                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Data inceput inchiriere invalida';
+                IF (NEW.data_inceput < ultima_data_retur and NEW.data_retur !=ultima_data_retur) THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'bi:Data inceput inchiriere invalida';
                 END IF;
             END IF;
         END
@@ -151,8 +151,8 @@ def create_tables_and_constraints():
         SELECT COUNT(*) INTO vechiul_nr_de_inchirieri FROM cerere WHERE id_masina = NEW.id_masina;
         IF vechiul_nr_de_inchirieri > 0 THEN
             SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
-            IF NEW.data_inceput < ultima_data_retur THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Data inceput inchiriere invalida ';
+            IF (NEW.data_inceput < ultima_data_retur and NEW.data_retur !=ultima_data_retur) THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'bu:Data inceput inchiriere invalida ';
             END IF;
         END IF;
         END
@@ -324,6 +324,37 @@ def create_tables_and_constraints():
     END IF;
     END
     """)
+    
+    cursor.execute("""
+    CREATE TRIGGER update_pret_total_after_update
+    AFTER UPDATE ON cerere
+    FOR EACH ROW
+    BEGIN
+    DECLARE ultima_data_retur DATE;
+    SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
+    IF (NEW.data_retur != ultima_data_retur) THEN
+        UPDATE cerere
+        SET pret_total = (SELECT DATEDIFF(NEW.data_retur, NEW.data_inceput) FROM DUAL)
+        *(SELECT pret_inchiriere FROM masina WHERE id_masina=NEW.id_masina);
+    END IF;
+    END
+    """)
+
+    cursor.execute("""
+    CREATE TRIGGER update_pret_total_after_inset
+    AFTER INSERT ON cerere
+    FOR EACH ROW
+    BEGIN
+    DECLARE ultima_data_retur DATE;
+    SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
+    IF (NEW.data_retur != ultima_data_retur) THEN  
+        UPDATE cerere
+        SET pret_total = (SELECT DATEDIFF(NEW.data_retur, NEW.data_inceput) FROM DUAL)
+        *(SELECT pret_inchiriere FROM masina WHERE id_masina=NEW.id_masina);
+    END IF;
+    END
+    """)
+
 
     cursor.execute("""commit""")  
 

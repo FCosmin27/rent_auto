@@ -229,6 +229,26 @@ def handle_update_car_verify():
         return render_template('home.html',text=f'Invalid Update, Car ID : {car_id} does not exist')
     return render_template('update_car.html',car=car)
 
+
+@app.route('/update-car-execute',methods=['POST'])
+def handle_update_car_execute():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    car_id=request.form['car_id']
+    type=request.form['type']
+    date_of_fb=request.form['date_of_fb']
+    color=request.form['color']
+    price=request.form['price']
+
+    try:
+        cursor.execute(f"UPDATE masina SET tip_masina='{type}', an_fabricatie='{date_of_fb}', culoare='{color}', pret_inchiriere={price} WHERE id_masina={car_id}")
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Car Info Update, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/cars')
+
+
 @app.route('/add-car-status',methods=['POST'])
 def handle_add_car_status():
     conn=connect_to_database()
@@ -240,8 +260,183 @@ def handle_add_car_status():
     try:
         cursor.execute("INSERT INTO status_masina (id_masina,status) VALUES (%s,%s)",(car_id,status))
     except Exception as e:
-        return render_template('home.html',text=f'Invalid Insert, Exception: {e}')
+        return render_template('home.html',text=f'Invalid Car Status Insert, Exception: {e}')
 
     cursor.execute("commit")
     
     return redirect('/cars')
+
+@app.route('/remove-car-status',methods=['POST'])
+def handle_remove_car_status():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    car_id=request.form['car_id']
+
+    try:
+        cursor.execute(f"DELETE FROM status_masina WHERE id_masina={car_id}")
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Car Status Delete, Exception: {e}')
+
+    cursor.execute("commit")
+
+    return redirect('/cars')
+
+@app.route('/update-car-status-verify',methods=['POST'])
+def handle_update_car_status_verify():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    car_id=request.form['car_id']
+
+    cursor.execute(f"SELECT * FROM status_masina WHERE id_masina={car_id}")
+    car_status=cursor.fetchone()
+    if car_status is None:
+        return render_template('home.html',text=f'Invalid Car status Update, Car ID : {car_id} does not exist')
+    return render_template('update_status.html',car_status=car_status)
+
+@app.route('/update-car-status-execute',methods=['POST'])
+def handle_update_car_status_execute():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    car_id=request.form['car_id']
+    status=request.form['status']
+    state_at_return=request.form['state_at_return']
+    return_date=request.form['return_date']
+
+    try:
+        cursor.execute(f"UPDATE status_masina SET status='{status}',stare_la_retur='{state_at_return}', data_retur_sm='{return_date}' WHERE id_masina={car_id}")
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Car Status Update, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/cars')
+
+
+@app.route('/orders')
+def handle_get_orders():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+
+    try:
+        cursor.execute('SELECT * FROM cerere')
+        active_orders=cursor.fetchall()
+        cursor.execute('SELECT * FROM lista_neagra')
+        black_list=cursor.fetchall()
+    except Exception as e:
+        return render_template('orders.html')
+    return render_template('orders.html',active_orders=active_orders,black_list=black_list)
+
+@app.route('/add-order',methods=['POST'])
+def handle_add_order():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    client_id=request.form['id_client']
+    car_id=request.form['id_car']
+    rental_date=request.form['rental_date']
+    return_date=request.form['return_date']
+
+    try:
+        cursor.execute("INSERT INTO cerere (id_client,id_masina,data_inchiriere,data_retur) VALUES (%s,%s,%s,%s)",(client_id,car_id,rental_date,return_date))
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Order Insert, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/orders')
+
+@app.route('/remove-order',methods=['POST'])
+def handle_remove_order():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    order_id=request.form['id_order']
+
+    try:
+        cursor.execute(f"DELETE FROM cerere WHERE id_cerere={order_id}")
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Order Delete, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/orders')
+
+@app.route('/update-order-verify',methods=['POST'])
+def handle_update_order_verify():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    order_id=request.form['id_order']
+
+    cursor.execute(f"SELECT * FROM cerere WHERE id_cerere={order_id}")
+    order=cursor.fetchone()
+    if order is None:
+        return render_template('home.html',text=f'Invalid Order Update, Order ID : {order_id} does not exist')
+    return render_template('update_order.html',order=order)
+
+@app.route('/update-order-execute',methods=['POST'])
+def handle_update_order_execute():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    order_id=request.form['id_order']
+    rental_date=request.form['rental_date']
+    return_date=request.form['return_date']
+
+    try:
+        cursor.execute(f"UPDATE cerere SET data_inceput='{rental_date}',data_retur='{return_date}' WHERE id_cerere={order_id}")
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Order Update, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/orders')
+
+
+@app.route('/add-black-list-verify',methods=['POST'])
+def handle_add_black_list():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    reason=request.form['reason']
+    client_id=request.form['id_client']
+
+    try:
+        cursor.execute("INSERT INTO lista_neagra (motiv_suspendare,id_client) VALUES (%s,%s)",(reason,client_id))
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Black List Insert, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/orders')
+
+@app.route('/remove-client-from-black-list',methods=['POST'])
+def handle_remove_client_from_black_list():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    client_id=request.form['id_client']
+
+    try:
+        cursor.execute(f"DELETE FROM lista_neagra WHERE id_client={client_id}")
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Black List Delete, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/orders')
+
+@app.route('/update-black-list-verify',methods=['POST'])
+def handle_update_black_list_verify():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    client_id=request.form['id_client']
+
+    cursor.execute(f"SELECT * FROM lista_neagra WHERE id_client={client_id}")
+    client=cursor.fetchone()
+    if client is None:
+        return render_template('home.html',text=f'Invalid Black List Update, Client ID : {client_id} does not exist')
+    return render_template('update_black_list.html',client=client)
+
+@app.route('/update-black-list-execute',methods=['POST'])
+def handle_update_black_list_execute():
+    conn=connect_to_database()
+    cursor=conn.cursor()
+    client_id=request.form['id_client']
+    reason=request.form['reason']
+
+    try:
+        cursor.execute(f"UPDATE lista_neagra SET motiv_suspendare='{reason}' WHERE id_client={client_id}")
+    except Exception as e:
+        return render_template('home.html',text=f'Invalid Black List Update, Exception: {e}')
+
+    cursor.execute("commit")
+    return redirect('/orders')

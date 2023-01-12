@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Update Car Status</title>
+        {% include 'blocks/css.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header.html' %}
+        <div class="container-fluid text-center bg" style="height: 100%;width: 100%;">
+        <h1>Update Car Status</h1>
+        <form class="mx-auto" action="/update-car-status-execute" method="post" style="width: 50%;">
+            <div class="form-group">
+                <label for="car_id">Car ID</label>
+                <input type="text" class="form-control" id="car_id" name="car_id" value="{{car_status[0]}}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+                <input type="text" class="form-control" id="status" name="status" value="{{car_status[1]}}">
+            </div>
+
+            <div class="form-group">
+                <label for="state_at_return">State at Return</label>
+                <input type="text" class="form-control" id="state_at_return" name="state_at_return" value="{{car_status[3]}}">
+            </div>
+
+            <div class="form-group">
+                <label for="return_date">Return Date</label>
+                <input type="text" class="form-control" id="return_date" name="return_date" value="{{car_status[4]}}">
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+        </div>
+        {% include 'blocks/js.html' %}
+    </body>
+</html>

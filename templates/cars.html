@@ -49,8 +49,9 @@
                         <tr style="font-size:20px;font-weight: bold;">
                             <th>Car ID</th>
                             <th>Status</th>
-                            <th>Status at Rental</th>
-                            <th>Status at Return</th>
+                            <th>State at Rental</th>
+                            <th>State at Return</th>
+                            <th>Return date</th>
                         </tr>
                     </thread>
                     <tbody>
@@ -60,6 +61,7 @@
                             <td>{{car_status[1]}}</td>
                             <td>{{car_status[2]}}</td>
                             <td>{{car_status[3]}}</td>
+                            <td>{{car_status[4]}}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -127,7 +129,7 @@
                         <span class = "input-group-text" for="return_date" style="width: 25%;">Return Date</span>
                         <input type="text" class="form-control" name="return_date" id="return_date" placeholder="ex. 2000-10-27" required>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 30%;">Add car status</button>
+                    <button type="submit" class="btn btn-primary" style="width: 25%;">Add car status</button>
                 </form>
 
                 <br>
@@ -136,7 +138,7 @@
                         <span class = "input-group-text" for="car_id" style="width: 25%;">Car ID</span>
                         <input type="text" class="form-control" name="car_id" id="car_id" placeholder="ex. 1" required>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 30%;">Remove car status</button>
+                    <button type="submit" class="btn btn-primary" style="width: 25%;">Remove car status</button>
                 </form>
                 <br>
 

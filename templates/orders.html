@@ -1,0 +1,143 @@
+<html>
+    <head>
+        <title>Orders</title>
+        {% include 'blocks/css.html' %}
+    </head>
+    
+    <body>
+        {% include 'blocks/header.html' %}
+
+        <div class="text-center">
+            <h1>Orders</h1>
+        </div>
+        <br>
+        <br>
+
+        <div class="row justify-content-center align-items-center" style="width:100%">
+        <div class="col-1" style="width: 60%;">
+            <h2>Active Orders</h2>
+            <table class="table table-striped table-hover" style="width: 100%">
+                <thread>
+                    <tr style="font-size:20px;font-weight: bold;">
+                        <th>Order ID</th>
+                        <th>Client ID</th>
+                        <th>Car ID</th>
+                        <th>Rental Date</th>
+                        <th>Return Date</th>
+                        <th>Rental Price</th>
+                    </tr>
+                </thread>
+                <tbody>
+                    {% for order in active_orders %}
+                    <tr>
+                        <td>{{order[0]}}</td>
+                        <td>{{order[3]}}</td>
+                        <td>{{order[4]}}</td>
+                        <td>{{order[1]}}</td>
+                        <td>{{order[2]}}</td>
+                        <td>{{order[5]}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br><br>
+            <h2>Black List</h2>
+            <table class="table table-striped table-hover" style="width: 100%">
+                <thread>
+                    <tr style="font-size:20px;font-weight: bold;">
+                        <th>Reason for Suspension</th>
+                        <th>Client ID</th>
+                    </tr>
+                </thread>
+                <tbody>
+                    {% for client in black_list %}
+                    <tr>
+                        <td>{{client[0]}}</td>
+                        <td>{{client[1]}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-1" style="width: 40%;">
+            <form action="/add-order" method="post">
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="id_client" style="width: 25%;">Client ID</span>
+                    <input type="text" class="form-control" name="id_client" id="id_client" placeholder="ex. 2" required>
+                </div>
+
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="id_car" style="width: 25%;">Car ID</span>
+                    <input type="text" class="form-control" name="id_car" id="id_car" placeholder="ex. 3" required>
+                </div>
+
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="rental_date" style="width: 25%;">Rental Date</span>
+                    <input type="text" class="form-control" name="rental_date" id="rental_date" placeholder="ex. 2022-01-04" required>
+                </div>
+
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="return_date" style="width: 25%;">Return Date</span>
+                    <input type="text" class="form-control" name="return_date" id="return_date" placeholder="ex. 2022-01-09" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 25%;">Add new order</button>
+            </form>
+
+            <br>
+
+            <form action="/remove-order" method="post">
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="id_order" style="width: 25%;">Order ID</span>
+                    <input type="text" class="form-control" name="id_order" id="id_order" placeholder="ex. 1" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 25%;">Remove order</button>
+            </form>
+
+            <br>
+
+            <form action="/update-order-verify" method="post">
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="id_order" style="width: 25%;">Order ID</span>
+                    <input type="text" class="form-control" name="id_order" id="id_order" placeholder="ex. 1" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 25%;">Update order</button>
+            </form>
+
+            <br>
+
+            <form action="/add-black-list-verify" method="post">
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="reason" style="width: 25%;">Reason of Suspension</span>
+                    <input type="text" class="form-control" name="reason" id="reason" placeholder="ex. had an accident" required>
+                </div>
+
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="id_client" style="width: 25%;">Client ID</span>
+                    <input type="text" class="form-control" name="id_client" id="id_client" placeholder="ex. 1" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 30%;">Add client in Black List</button>
+            </form>
+
+            <br>
+            <form action="/remove-client-from-black-list"method="post">
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="id_client" style="width: 25%;">Client ID</span>
+                    <input type="text" class="form-control" name="id_client" id="id_client" placeholder="ex. 1" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 30%;">Remove client from Black List</button>
+            </form>
+            <br>
+
+            <form action="/update-black-list-verify" method="post">
+                <div class="input-group mb-3 data_input_size">
+                    <span class = "input-group-text" for="id_client" style="width: 25%;">Client ID</span>
+                    <input type="text" class="form-control" name="id_client" id="id_client" placeholder="ex. 1" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 30%;">Update client from Black List</button>
+            </form>
+        </div>
+        </div>
+    {% include 'blocks/js.html' %}
+    </body>
+</html>
