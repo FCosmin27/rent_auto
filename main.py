@@ -301,7 +301,6 @@ def handle_update_car_status_execute():
     status=request.form['status']
     state_at_return=request.form['state_at_return']
     return_date=request.form['return_date']
-
     try:
         cursor.execute(f"UPDATE status_masina SET status='{status}',stare_la_retur='{state_at_return}', data_retur_sm='{return_date}' WHERE id_masina={car_id}")
     except Exception as e:
@@ -317,7 +316,7 @@ def handle_get_orders():
     cursor=conn.cursor()
 
     try:
-        cursor.execute('SELECT * FROM cerere')
+        cursor.execute('SELECT * FROM cerere ORDER BY data_inceput')
         active_orders=cursor.fetchall()
         cursor.execute('SELECT * FROM lista_neagra')
         black_list=cursor.fetchall()
@@ -335,7 +334,7 @@ def handle_add_order():
     return_date=request.form['return_date']
 
     try:
-        cursor.execute("INSERT INTO cerere (id_client,id_masina,data_inchiriere,data_retur) VALUES (%s,%s,%s,%s)",(client_id,car_id,rental_date,return_date))
+        cursor.execute("INSERT INTO cerere (id_client,id_masina,data_inceput,data_retur,pret_total) VALUES (%s,%s,%s,%s,(datediff(%s,%s))*(select pret_inchiriere from masina where id_masina=%s))",(client_id,car_id,rental_date,return_date,return_date,rental_date,car_id))
     except Exception as e:
         return render_template('home.html',text=f'Invalid Order Insert, Exception: {e}')
 
@@ -375,9 +374,10 @@ def handle_update_order_execute():
     order_id=request.form['id_order']
     rental_date=request.form['rental_date']
     return_date=request.form['return_date']
+    car_id=request.form['id_car']
 
     try:
-        cursor.execute(f"UPDATE cerere SET data_inceput='{rental_date}',data_retur='{return_date}' WHERE id_cerere={order_id}")
+        cursor.execute("UPDATE cerere SET data_inceput=%s, data_retur=%s, pret_total=(datediff(%s,%s)*(select pret_inchiriere from masina where id_masina=%s)) WHERE id_cerere=%s",(rental_date, return_date, return_date, rental_date, car_id, order_id))
     except Exception as e:
         return render_template('home.html',text=f'Invalid Order Update, Exception: {e}')
 

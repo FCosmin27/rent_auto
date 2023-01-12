@@ -84,11 +84,12 @@ def create_tables_and_constraints():
             data_retur   DATE NOT NULL,
             id_client    INT NOT NULL,
             id_masina    INT NOT NULL,
-            pret_total   INT NOT NULL,
+            pret_total   INT DEFAULT 0,
             PRIMARY KEY (id_cerere),
             FOREIGN KEY (id_client) REFERENCES cont_client (id_client),
             FOREIGN KEY (id_masina) REFERENCES masina (id_masina)
         )
+
     """)
 
     cursor.execute("""
@@ -131,33 +132,19 @@ def create_tables_and_constraints():
         FOR EACH ROW
         BEGIN
             DECLARE ultima_data_retur DATE;
+            DECLARE prima_data_inchiriere DATE;
             DECLARE vechiul_nr_de_inchirieri INT;
             SELECT COUNT(*) INTO vechiul_nr_de_inchirieri FROM cerere WHERE id_masina = NEW.id_masina;
             IF vechiul_nr_de_inchirieri > 0 THEN
                 SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
-                IF (NEW.data_inceput < ultima_data_retur and NEW.data_retur !=ultima_data_retur) THEN
-                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'bi:Data inceput inchiriere invalida';
+                SELECT MIN(data_inceput) INTO prima_data_inchiriere FROM cerere WHERE id_masina = NEW.id_masina;
+                IF (NEW.data_inceput > prima_data_inchiriere and NEW.data_inceput < ultima_data_retur) THEN 
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'bi:Data inserata nu indeplineste conditiile';
                 END IF;
             END IF;
         END
     """)
-    cursor.execute("""
-        CREATE TRIGGER trg_cerere_data_inceput_before_update
-        BEFORE UPDATE ON cerere
-        FOR EACH ROW
-        BEGIN
-        DECLARE ultima_data_retur DATE;
-        DECLARE vechiul_nr_de_inchirieri INT;
-        SELECT COUNT(*) INTO vechiul_nr_de_inchirieri FROM cerere WHERE id_masina = NEW.id_masina;
-        IF vechiul_nr_de_inchirieri > 0 THEN
-            SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
-            IF (NEW.data_inceput < ultima_data_retur and NEW.data_retur !=ultima_data_retur) THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'bu:Data inceput inchiriere invalida ';
-            END IF;
-        END IF;
-        END
-    """)
-
+  
     cursor.execute("""
         CREATE TRIGGER trg_cerere_id_client_before_insert
         BEFORE INSERT ON cerere 
@@ -249,52 +236,97 @@ def create_tables_and_constraints():
     """)
 
     cursor.execute("""
-    CREATE TRIGGER update_rating_masina_after_update
+    CREATE TRIGGER update_rating_si_lista_cereri_after_update
     AFTER UPDATE ON status_masina
     FOR EACH ROW
     BEGIN
+    DECLARE nr_inchirieri_masina INT;
+    DECLARE prima_data_inchiriere DATE;
+    DECLARE var_client INT;
+    DECLARE var_rental_date DATE;
+
+    SELECT COUNT(*) into nr_inchirieri_masina from cerere where id_masina=NEW.id_masina and data_inceput<NEW.data_retur_sm;
+    SELECT MIN(data_inceput) into prima_data_inchiriere from cerere where id_masina=NEW.id_masina and data_inceput<NEW.data_retur_sm;
+    IF(nr_inchirieri_masina>1) THEN
+        DELETE from cerere where id_masina=NEW.id_masina and data_inceput>prima_data_inchiriere and data_inceput<NEW.data_retur_sm;
+        UPDATE cerere SET pret_total= (datediff(NEW.data_retur_sm,data_inceput)*(select pret_inchiriere from masina where id_masina=NEW.id_masina)),
+        data_retur = NEW.data_retur_sm where id_masina=NEW.id_masina and data_inceput=prima_data_inchiriere;
+    ELSEIF (nr_inchirieri_masina=1) THEN
+        UPDATE cerere
+        SET data_retur = NEW.data_retur_sm,
+        pret_total= (datediff(NEW.data_retur_sm,data_inceput)*(select pret_inchiriere from masina where id_masina=NEW.id_masina))
+        WHERE id_masina = NEW.id_masina
+        AND data_inceput = prima_data_inchiriere;
+    END IF;
+    SELECT id_client, data_inceput INTO var_client, var_rental_date FROM cerere WHERE id_masina = NEW.id_masina AND data_retur = NEW.data_retur_sm;
     IF (NEW.stare_la_retur = 'SCRATCHED' and NEW.status='RETURNED') THEN
         UPDATE cont_client
         SET rating = rating - 1
-        WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
-        and rating>4;
+        WHERE id_client = var_client
+        and rating>4
+        and var_rental_date = (SELECT data_inceput FROM cerere WHERE id_masina = NEW.id_masina and data_retur = NEW.data_retur_sm);
     END IF;
     IF (NEW.stare_la_retur = 'GOOD CONDITION'and NEW.status='RETURNED') THEN
-            UPDATE cont_client
-            SET rating = rating + 1
-            WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
-            and rating<10;
+        UPDATE cont_client
+        SET rating = rating + 1
+        WHERE id_client = var_client
+        and rating<10
+        and var_rental_date = (SELECT data_inceput FROM cerere WHERE id_masina = NEW.id_masina and data_retur = NEW.data_retur_sm);
     END IF;
     IF (NEW.stare_la_retur = 'ACCIDENT'and NEW.status='RETURNED') THEN
-            UPDATE cont_client
-            SET rating = rating - 4
-            WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
-            and rating>4;
+        UPDATE cont_client
+        SET rating = rating - 4
+        WHERE id_client = var_client
+        and rating>4
+        and var_rental_date = (SELECT data_inceput FROM cerere WHERE id_masina = NEW.id_masina and data_retur = NEW.data_retur_sm);
     END IF;
     END
     """)
+
     cursor.execute("""
-    CREATE TRIGGER update_rating_masina_after_insert
+    CREATE TRIGGER update_rating_si_lista_cereri_after_insert
     AFTER INSERT ON status_masina
     FOR EACH ROW
     BEGIN
+    DECLARE nr_inchirieri_masina INT;
+    DECLARE prima_data_inchiriere DATE;
+    DECLARE var_client INT;
+    DECLARE var_rental_date DATE;
+
+    SELECT COUNT(*) into nr_inchirieri_masina from cerere where id_masina=NEW.id_masina and data_inceput<NEW.data_retur_sm;
+    SELECT MIN(data_inceput) into prima_data_inchiriere from cerere where id_masina=NEW.id_masina and data_inceput<NEW.data_retur_sm;
+    IF(nr_inchirieri_masina>1) THEN
+        DELETE from cerere where id_masina=NEW.id_masina and data_inceput>prima_data_inchiriere and data_inceput<NEW.data_retur_sm;
+        UPDATE cerere SET pret_total= (datediff(NEW.data_retur_sm,data_inceput)*(select pret_inchiriere from masina where id_masina=NEW.id_masina)),
+        data_retur = NEW.data_retur_sm where id_masina=NEW.id_masina and data_inceput=prima_data_inchiriere;
+    ELSEIF (nr_inchirieri_masina=1) THEN
+        UPDATE cerere
+        SET data_retur = NEW.data_retur_sm,
+        pret_total= (datediff(NEW.data_retur_sm,data_inceput)*(select pret_inchiriere from masina where id_masina=NEW.id_masina))
+        WHERE id_masina = NEW.id_masina
+        AND data_inceput = prima_data_inchiriere;
+    END IF;
+    SELECT id_client, data_inceput INTO var_client, var_rental_date FROM cerere WHERE id_masina = NEW.id_masina AND data_retur = NEW.data_retur_sm;
     IF (NEW.stare_la_retur = 'SCRATCHED' and NEW.status='RETURNED') THEN
         UPDATE cont_client
         SET rating = rating - 1
-        WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
-        and rating>4;
+        WHERE id_client = var_client
+        and rating>4
+        and var_rental_date = (SELECT data_inceput FROM cerere WHERE id_masina = NEW.id_masina and data_retur = NEW.data_retur_sm);
     END IF;
     IF (NEW.stare_la_retur = 'GOOD CONDITION'and NEW.status='RETURNED') THEN
-            UPDATE cont_client
-            SET rating = rating + 1
-            WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
-            and rating<10;
+        UPDATE cont_client
+        SET rating = rating + 1
+        WHERE id_client = var_client
+        and rating<10
+        and var_rental_date = (SELECT data_inceput FROM cerere WHERE id_masina = NEW.id_masina and data_retur = NEW.data_retur_sm);
     END IF;
     IF (NEW.stare_la_retur = 'ACCIDENT'and NEW.status='RETURNED') THEN
-            UPDATE cont_client
-            SET rating = rating - 4
-            WHERE id_client = (SELECT id_client FROM cerere WHERE id_masina = NEW.id_masina and NEW.data_retur_sm=data_retur)
-            and rating>4;
+        UPDATE cont_client
+        SET rating = rating - 4
+        WHERE id_client = var_client
+        and rating>4
+        and var_rental_date = (SELECT data_inceput FROM cerere WHERE id_masina = NEW.id_masina and data_retur = NEW.data_retur_sm);
     END IF;
     END
     """)
@@ -324,37 +356,6 @@ def create_tables_and_constraints():
     END IF;
     END
     """)
-    
-    cursor.execute("""
-    CREATE TRIGGER update_pret_total_after_update
-    AFTER UPDATE ON cerere
-    FOR EACH ROW
-    BEGIN
-    DECLARE ultima_data_retur DATE;
-    SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
-    IF (NEW.data_retur != ultima_data_retur) THEN
-        UPDATE cerere
-        SET pret_total = (SELECT DATEDIFF(NEW.data_retur, NEW.data_inceput) FROM DUAL)
-        *(SELECT pret_inchiriere FROM masina WHERE id_masina=NEW.id_masina);
-    END IF;
-    END
-    """)
-
-    cursor.execute("""
-    CREATE TRIGGER update_pret_total_after_inset
-    AFTER INSERT ON cerere
-    FOR EACH ROW
-    BEGIN
-    DECLARE ultima_data_retur DATE;
-    SELECT MAX(data_retur) INTO ultima_data_retur FROM cerere WHERE id_masina = NEW.id_masina;
-    IF (NEW.data_retur != ultima_data_retur) THEN  
-        UPDATE cerere
-        SET pret_total = (SELECT DATEDIFF(NEW.data_retur, NEW.data_inceput) FROM DUAL)
-        *(SELECT pret_inchiriere FROM masina WHERE id_masina=NEW.id_masina);
-    END IF;
-    END
-    """)
-
 
     cursor.execute("""commit""")  
 
