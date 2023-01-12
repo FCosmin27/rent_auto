@@ -1,0 +1,10 @@
+.bg{
+    background-image: url("https://i.pinimg.com/originals/cc/c3/57/ccc35763ff03668050dabd98ffd9d35b.jpg");
+    background-color: gray;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+.data_input_size{
+    width:90%;
+}
